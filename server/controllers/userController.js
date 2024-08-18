@@ -9,7 +9,7 @@ const getUserPreferences = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching user preferences' });
+    res.status(500).json({ message: 'Error fetching user preferences', error: error.message });
   }
 };
 
@@ -22,7 +22,7 @@ const updateUserPreferences = async (req, res) => {
     );
     res.json(user.preferences);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating user preferences' });
+    res.status(500).json({ message: 'Error updating user preferences', error: error.message });
   }
 };
 

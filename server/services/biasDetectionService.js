@@ -1,22 +1,33 @@
-const spacy = require('spacy-nlp');
+const axios = require('axios');
+const spacy = require('spacy');
+
 const nlp = spacy.load('en_core_web_sm');
-const { TextBlob } = require('textblob');
-
-const analyzeBias = (text) => {
-  // Placeholder for actual bias detection logic
-  // For demonstration, use sentiment analysis as a proxy
-  const blob = new TextBlob(text);
-  const sentiment = blob.sentiment.polarity;
-
-  if (sentiment > 0) return 'positive';
-  if (sentiment < 0) return 'negative';
-  return 'neutral';
-};
 
 const neutralizeContent = (text) => {
-  // Placeholder for content neutralization logic
-  // This can involve rephrasing or balancing the content
-  return text; // No actual neutralization implemented
+  const doc = nlp(text);
+  let neutralText = '';
+
+  doc.forEach(token => {
+    if (token.pos_ !== 'ADJ' && token.pos_ !== 'ADV') {
+      neutralText += token.text + ' ';
+    }
+  });
+
+  return neutralText.trim();
+};
+
+const analyzeBias = async (text) => {
+  try {
+    const response = await axios.post('http://localhost:5001/analyze', { text });
+    const sentiment = response.data[0].label;
+
+    if (sentiment === 'POSITIVE') return 'positive';
+    if (sentiment === 'NEGATIVE') return 'negative';
+    return 'neutral';
+  } catch (error) {
+    console.error('Error analyzing sentiment:', error);
+    return 'neutral';
+  }
 };
 
 module.exports = { analyzeBias, neutralizeContent };

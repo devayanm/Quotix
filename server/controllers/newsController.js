@@ -4,25 +4,20 @@ const { analyzeBias, neutralizeContent } = require('../services/biasDetectionSer
 
 const getNews = async (req, res) => {
   try {
-    // Retrieve user preferences from query parameters or session
     const username = req.query.username;
     const user = username ? await User.findOne({ username }) : null;
-    const preferences = user ? user.preferences : {};
+    const preferences = user ? user.preferences : { region: 'us' };
 
-    // Scrape news based on user preferences
     const articles = await scrapeNews(preferences);
-    
-    // Process articles to neutralize content and detect bias
-    const processedArticles = articles.map(article => ({
+    const processedArticles = await Promise.all(articles.map(async article => ({
       ...article,
       summary: neutralizeContent(article.summary),
-      bias: analyzeBias(article.summary)
-    }));
-    
-    // Send the processed articles as response
+      bias: await analyzeBias(article.summary)
+    })));
+
     res.json(processedArticles);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching news' });
+    res.status(500).json({ message: 'Error fetching news', error: error.message });
   }
 };
 
