@@ -11,7 +11,7 @@ const getNews = async (req, res) => {
     const articles = await scrapeNews(preferences);
     const processedArticles = await Promise.all(articles.map(async article => ({
       ...article,
-      summary: neutralizeContent(article.summary),
+      summary: await neutralizeContent(article.summary),
       bias: await analyzeBias(article.summary)
     })));
 
